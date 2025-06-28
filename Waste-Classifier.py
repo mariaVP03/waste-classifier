@@ -5,7 +5,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 # Constants
-MODEL_PATH = 'WASTE_CLASSIFIER_V2'
+MODEL_PATH = 'WASTE_CLASSIFIER_V4_RESNET50'
 CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
 
 @st.cache(allow_output_mutation=True)
