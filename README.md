@@ -16,8 +16,8 @@ The goal is to help users identify recyclable materials easily from an uploaded 
 
 ## Team
 Created by:
-- Uxia Logo
-- Joy Zohn
+- Uxia Lojo
+- Joy Zhong
 - James Alarde
 - Maria Vazquez Pinedo
 - Sarina Ratnabhas 
