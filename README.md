@@ -14,7 +14,6 @@ The goal is to help users identify recyclable materials easily from an uploaded 
 - The model returns the predicted category and confidence score
 - Built using **TensorFlow**, **Streamlit**, and **MobileNetV2**
 
-
 ## Team
 Created by:
 - Uxia Logo
