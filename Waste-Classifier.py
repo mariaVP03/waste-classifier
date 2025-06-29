@@ -1,13 +1,19 @@
+
 import streamlit as st
 from PIL import Image
 import tensorflow as tf
 import numpy as np
+from tensorflow.keras.models import model_from_json
 
+# Constants
 CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
 
 @st.cache(allow_output_mutation=True)
 def load_model_cached():
-    model = tf.keras.models.load_model("weights.hdf5")
+    with open("network.json", "r") as json_file:
+        loaded_model_json = json_file.read()
+    model = model_from_json(loaded_model_json)
+    model.load_weights("weights.hdf5")
     return model
 
 def preprocess_image(image):
@@ -24,44 +30,53 @@ def predict(image):
     confidence = predictions[0][class_idx]
     return CLASS_NAMES[class_idx], confidence
 
-# Página 1: Introducción
 def page_intro():
-    st.title("♻ Waste Classification")
-    st.subheader("📊 Business Case: The Problem")
+    st.title("♻️ Waste Classification")
+    st.subheader("📊Business Case: The Problem")
     st.markdown("""
-    By 2030, the world is expected to generate over *2.6 billion tons of waste* per year.  
-    Current waste management systems are inefficient:
-    - Manual sorting is slow
-    - Processing costs are high ($50–$100/ton)
-    - Error rates reach 15–25%
+    By **2030**, the world is expected to generate over **2.6 billion tons of waste** every year.  
+    Current waste management systems are inefficient and suffer from:
 
-    Result: contamination, high costs, and poor recycling efficiency.
+    - **Manual human sorting** that handles only 1–2 items per second
+    - **High processing costs** of **$50–$100 per ton**
+    - **Contamination and classification error rates** between **15–25%**
+
+    These inefficiencies lead to:
+    - ⚠️ **High contamination rates**
+    - 💸 **Increased processing costs**
+    - ♻️ **Reduced recycling efficiency**
     """)
 
-    st.subheader("💡 What Our Project Does")
+    st.subheader("💡What Our Project Does")
     st.markdown("""
-    Our AI app classifies waste into:
-    - Cardboard
-    - Glass
-    - Metal
-    - Paper
-    - Plastic
-    - Trash
+    To address these challenges, our team built an **AI-powered waste classifier** based on **ResNet50**.
 
-    Using ResNet50, we make sorting faster, cheaper, and more accurate.
+    The app uses computer vision to classify household or industrial waste images into six key categories:
+
+    - **Cardboard**
+    - **Glass**
+    - **Metal**
+    - **Paper**
+    - **Plastic**
+    - **Trash**
+
+    This makes sorting faster, cheaper, and more reliable.
     """)
 
-    st.subheader("✅ How It Helps")
+    st.subheader("✅ How It Solves the Problem")
     st.markdown("""
-    - Automates classification
-    - Improves accuracy
-    - Reduces contamination
-    - Boosts recycling and sustainability
+    - **Automates classification**, eliminating the need for slow human sorting
+    - **Improves accuracy**, reducing contamination and error rates
+    - **Cuts costs** by optimizing the processing chain
+    - **Boosts recycling efficiency**, contributing to sustainability goals
+
+    In short, our solution leverages AI to make waste management **smarter, greener, and more scalable**.
     """)
 
-# Página 2: Clasificación
 def page_predict():
-    st.title("🧪 Waste Prediction")
+    st.title("Waste Classification")
+    st.write("Upload a photo or take one with your webcam. The model will predict the category and give you eco information.")
+
     input_method = st.radio("Select input method:", ["📁 Upload from device", "📷 Take a photo"])
     img = None
 
@@ -79,51 +94,49 @@ def page_predict():
 
     if img and st.button("🔍 Predict Waste Category"):
         label, confidence = predict(img)
-        st.success(f"Prediction: {label.upper()}")
-        st.write(f"Confidence: {confidence:.2f}")
+        st.success(f"Prediction: **{label.upper()}**")
+        st.write(f"Confidence: **{confidence:.2f}**")
 
-        # Info ambiental
         waste_info = {
             "cardboard": {
-                "impact": "Cardboard is recyclable, but production pollutes water and emits methane in landfills.",
-                "bin": "🟦 Blue bin",
+                "impact": "Cardboard has a mixed environmental impact. While it's a bio-based, recyclable, and biodegradable material, its production and disposal can negatively affect the environment. Concerns include water pollution from pulping, methane production in landfills, and resource consumption. However, cardboard's recyclability and potential to reduce plastic use offer some environmental benefits.",
+                "bin": "🟦Blue bin",
                 "link": "https://www.gwp.co.uk/guides/how-is-cardboard-recycled/"
             },
             "glass": {
-                "impact": "Glass is 100% recyclable, but heavy and energy-intensive to produce.",
-                "bin": "🟩 Green bin",
+                "impact": "Glass production and disposal have both positive and negative environmental impacts. While glass is 100% recyclable and can be recycled endlessly, its production is energy-intensive and relies on finite resources, potentially leading to land degradation and biodiversity loss. The heavy weight of glass also contributes to higher transportation emissions.",
+                "bin": "🟩Green bin",
                 "link": "https://www.recyclenow.com/how-to-recycle/glass-recycling"
             },
             "metal": {
-                "impact": "Metal production causes habitat loss, pollution, and CO₂ emissions.",
-                "bin": "🟨 Yellow bin",
+                "impact": "Metal production and use have significant and widespread impacts on the environment, including resource depletion, habitat destruction, pollution, and contributions to climate change. These impacts stem from mining, processing, and the eventual disposal of metal-containing products.",
+                "bin": "🟨Yellow bin",
                 "link": "https://www.anis-trend.com/recycling-metals-5-simple-steps/"
             },
             "paper": {
-                "impact": "Paper production leads to deforestation, water/air pollution and methane from waste.",
-                "bin": "🟦 Blue bin",
+                "impact": "The environmental impact of paper production and use is multifaceted, encompassing deforestation, air and water pollution, and waste generation. Paper production relies heavily on trees, contributing to deforestation and habitat loss, while the manufacturing process releases pollutants into the air and water. Additionally, paper waste, including discarded paper and cardboard, makes up a significant portion of landfill waste, with the potential to decompose and release harmful greenhouse gases.",
+                "bin": "🟦Blue bin",
                 "link": "https://www.recyclenow.com/how-to-recycle/paper-recycling"
             },
             "plastic": {
-                "impact": "Plastic pollution affects oceans, wildlife and releases toxic chemicals.",
-                "bin": "🟨 Yellow bin",
+                "impact": "Plastic pollution has far-reaching and detrimental effects on the environment, impacting ecosystems, wildlife, and even human health. It contributes to climate change, pollutes ecosystems with microplastics and toxic chemicals, and poses threats to marine life through ingestion and entanglement.",
+                "bin": "🟨Yellow bin",
                 "link": "https://www.recyclenow.com/how-to-recycle/plastic-recycling"
             },
             "trash": {
-                "impact": "Non-recyclable waste releases gases, leaches toxins, and harms biodiversity.",
-                "bin": "🟫 Brown bin",
-                "link": "https://northlondonheatandpower.london/alternative-ways-treat-non-recyclable-waste"
+                "impact": "Non-recyclable trash significantly harms the environment, leading to pollution, habitat destruction, and contributing to climate change. Landfills overflow, releasing harmful gases and leaching toxins into soil and water. Plastic waste, in particular, breaks down into microplastics, polluting ecosystems and harming wildlife.",
+                "bin": "🟫Brown bin", "link": "https://northlondonheatandpower.london/alternative-ways-treat-non-recyclable-waste"
+                },
             }
-        }
 
-        info = waste_info.get(label.lower())
+            info = waste_info.get(label.lower())
+
         if info:
-            st.markdown(f"### ♻ Environmental Info for: {label.title()}")
-            st.write(f"🌍 Impact: {info['impact']}")
-            st.write(f"🗑 Recycle in: {info['bin']}")
+            st.markdown(f"### ♻️ Environmental Info for: {label.title()}")
+            st.write(f"🌍 **Impact:** {info['impact']}")
+            st.write(f"🗑️ **Recycle in:** {info['bin']}")
             st.markdown(f"[🔗 Learn more about {label.lower()} recycling]({info['link']})")
 
-# Página 3: About Us
 def page_about():
     st.title("👋 Meet the Team")
 
@@ -137,25 +150,23 @@ def page_about():
         st.markdown(f"### {name}")
         st.image(image, width=180)
 
-    st.markdown("We’re passionate about using AI for sustainability and solving real-world challenges 🌍.")
+    st.markdown("""
+    We are a team passionate about using AI to build meaningful, sustainable solutions that tackle real-world problems like waste management. 🌍
+    """)
 
-# Sidebar navigation
-def render_sidebar():
-    st.sidebar.title("Navigation")
-    return st.sidebar.radio("Go to", ["Introduction", "Waste Prediction", "About Us"])
+def main():
+    page = st.sidebar.radio("Go to", ["Introduction", "Waste Prediction", "About Us"])
 
-# Main routing
-if _name_ == "_main_":
-    current_page = render_sidebar()
-
-    if current_page == "Introduction":
+    if page == "Introduction":
         page_intro()
-    elif current_page == "Waste Prediction":
+    elif page == "Waste Prediction":
         page_predict()
-    elif current_page == "About Us":
+    elif page == "About Us":
         page_about()
-    else:
-        page_intro()
+
+if __name__ == "__main__":
+    main()
+
 
 
 
