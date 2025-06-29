@@ -2,20 +2,23 @@ import streamlit as st
 from PIL import Image
 import tensorflow as tf
 import numpy as np
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import model_from_json
 
 # Constants
-MODEL_PATH = 'WASTE_CLASSIFIER_V4_RESNET50'
 CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
 
 @st.cache(allow_output_mutation=True)
 def load_model_cached():
-    return load_model(MODEL_PATH)
+    with open("network.json", "r") as json_file:
+        loaded_model_json = json_file.read()
+    model = model_from_json(loaded_model_json)
+    model.load_weights("weights.hdf5")
+    return model
 
 def preprocess_image(image):
-    image = image.resize((224, 224))  # MobileNetV2 input size
+    image = image.resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(image)
-    img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
+    img_array = tf.keras.applications.resnet50.preprocess_input(img_array)
     return np.expand_dims(img_array, axis=0)
 
 def predict(image):
@@ -51,7 +54,7 @@ if page == "Introduction":
 
     st.subheader("💡What Our Project Does")
     st.markdown("""
-    To address these challenges, our team built an **AI-powered waste classifier** based on **MobileNetV2**.
+    To address these challenges, our team built an **AI-powered waste classifier** based on **ResNet50**.
 
     The app uses computer vision to classify household or industrial waste images into six key categories:
 
@@ -80,7 +83,6 @@ elif page == "Waste Prediction":
     st.title("Waste Classification")
     st.write("Upload a photo or take one with your webcam. The model will predict the category and give you eco information.")
 
-    # Choose input method
     input_method = st.radio("Select input method:", ["📁 Upload from device", "📷 Take a photo"])
 
     img = None
@@ -97,13 +99,11 @@ elif page == "Waste Prediction":
             img = Image.open(cam)
             st.image(img, caption="Captured Photo", use_column_width=True)
 
-    # Predict button
     if img and st.button("🔍 Predict Waste Category"):
         label, confidence = predict(img)
         st.success(f"Prediction: **{label.upper()}**")
         st.write(f"Confidence: **{confidence:.2f}**")
 
-        # Info dictionary
         waste_info = {
             "cardboard": {
                 "impact": "Cardboard has a mixed environmental impact. While it's a bio-based, recyclable, and biodegradable material, its production and disposal can negatively affect the environment. Concerns include water pollution from pulping, methane production in landfills, and resource consumption. However, cardboard's recyclability and potential to reduce plastic use offer some environmental benefits.",
@@ -145,7 +145,6 @@ elif page == "Waste Prediction":
             st.write(f"🗑️ **Recycle in:** {info['bin']}")
             st.markdown(f"[🔗 Learn more about {label.lower()} recycling]({info['link']})")
 
-
 # Page 3: About Us
 elif page == "About Us":
     st.title("👋 Meet the Team")
@@ -161,13 +160,12 @@ elif page == "About Us":
 
     st.markdown("### Maria Vazquez")
     st.image("Maria.jpeg", width=180)
-    
+
     st.markdown("### Sarina Ratnabhas")
     st.image("Sarina.jpeg", width=180)
-  
 
     st.markdown("""
     We are a team passionate about using AI to build meaningful, sustainable solutions that tackle real-world problems like waste management. 🌍
     """)
-    
+
 
